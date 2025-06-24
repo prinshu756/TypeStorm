@@ -6,10 +6,7 @@ import generateRandomWords from "./randomWords.js";
 import "./index.css";
 import "./style.css";
 
-const wordsList = generateRandomWords(100)
-
-console.log(wordsList);
-
+const wordsList = generateRandomWords(100);
 
 function MainGame() {
   const canvasRef = useRef(null);
@@ -32,21 +29,20 @@ function MainGame() {
     const txt = wordsList[Math.floor(Math.random() * wordsList.length)];
     const canvasWidth = window.innerWidth;
     const ctx = canvasRef.current.getContext("2d");
-    ctx.font = "28px 'Share Tech Mono', monospace"; 
+    ctx.font = "28px 'Share Tech Mono', monospace";
     const wordWidth = ctx.measureText(txt).width;
     const x = Math.random() * (canvasWidth - wordWidth - 40) + 20;
 
+    const newWord = {
+      text: txt,
+      typed: "",
+      x,
+      y: -40,
+      speed: speedRef.current,
+    };
+
     setActive((prev) => {
-      const updated = [
-        ...prev,
-        {
-          text: txt,
-          typed: "",
-          x: x,
-          y: -40,
-          speed: speedRef.current,
-        },
-      ];
+      const updated = [...prev, newWord];
       activeRef.current = updated;
       return updated;
     });
@@ -75,16 +71,13 @@ function MainGame() {
   };
 
   const explodeWord = (word) => {
-    let newParticles = [];
-    for (let i = 0; i < 10; i++) {
-      newParticles.push({
-        x: word.x,
-        y: word.y,
-        vx: Math.random() * 4 - 1,
-        vy: Math.random() * 4 - 1,
-        alpha: 1,
-      });
-    }
+    const newParticles = Array.from({ length: 10 }).map(() => ({
+      x: word.x,
+      y: word.y,
+      vx: Math.random() * 4 - 2,
+      vy: Math.random() * 4 - 2,
+      alpha: 1,
+    }));
     setParticles((prev) => [...prev, ...newParticles]);
   };
 
@@ -92,9 +85,7 @@ function MainGame() {
     const ch = typeof e === "string" ? e : e.key.toLowerCase();
     if (!ch || !activeRef.current.length) return;
 
-    document
-      .querySelectorAll(".key-btn")
-      .forEach((btn) => (btn.style.background = "#222"));
+    document.querySelectorAll(".key-btn").forEach((btn) => (btn.style.background = "#222"));
     const target = document.querySelector(`.key-btn[data-key='${ch}']`);
     if (target) target.style.background = "#0f0";
 
@@ -103,15 +94,12 @@ function MainGame() {
 
     if (first.text.startsWith(first.typed + ch)) {
       updatedFirst.typed += ch;
-      shootRef.current.currentTime = 0;
-      shootRef.current.play();
+      shootRef.current?.play();
 
       if (updatedFirst.typed === updatedFirst.text) {
-        explosionRef.current.currentTime = 0;
-        explosionRef.current.play();
+        explosionRef.current?.play();
         explodeWord(updatedFirst);
         setScore((prev) => prev + updatedFirst.text.length * 10);
-
         activeRef.current = rest;
         setActive(rest);
         return;
@@ -126,14 +114,13 @@ function MainGame() {
     }
   };
 
-  const isTouchDevice = () => window.matchMedia("(pointer: coarse)").matches;
-
   useEffect(() => {
-    const listener = (e) => {
-      if (!isTouchDevice()) handleKey(e);
-    };
-    document.addEventListener("keydown", listener);
-    return () => document.removeEventListener("keydown", listener);
+    const isTouch = window.matchMedia("(pointer: coarse)").matches;
+    if (!isTouch) {
+      const listener = (e) => handleKey(e);
+      document.addEventListener("keydown", listener);
+      return () => document.removeEventListener("keydown", listener);
+    }
   }, []);
 
   useEffect(() => {
@@ -158,42 +145,35 @@ function MainGame() {
       updateParticles();
       drawParticles(ctx);
 
-      const updated = activeRef.current.map((w) => ({
-        ...w,
-        y: w.y + w.speed,
-      }));
+      const updated = activeRef.current.map((w) => ({ ...w, y: w.y + w.speed }));
 
       updated.forEach((w, i) => {
         ctx.font = "28px 'Press Start 2P', monospace";
-        const typed = w.typed;
-        const rest = w.text.substring(typed.length);
+        const { typed, text, x, y } = w;
+        const rest = text.substring(typed.length);
         ctx.fillStyle = i === 0 ? "#0ff" : "#aaa";
-        ctx.fillText(typed, w.x, w.y);
+        ctx.fillText(typed, x, y);
         ctx.fillStyle = "#fff";
-        ctx.fillText(rest, w.x + ctx.measureText(typed).width, w.y);
+        ctx.fillText(rest, x + ctx.measureText(typed).width, y);
       });
 
       if (updated.some((w) => w.y > canvas.height - 10)) {
         if (!gameOver) setGameOver(true);
-        return;
+        return  ;
       }
 
-      setActive(updated);
       activeRef.current = updated;
+      setActive(updated);
 
       if (!gameOver) gameLoopRef.current = requestAnimationFrame(loop);
     };
 
-    if (!gameOver) {
-      gameLoopRef.current = requestAnimationFrame(loop);
-    }
-
+    if (!gameOver) gameLoopRef.current = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(gameLoopRef.current);
   }, [gameOver]);
 
   return (
-    <div className="w-screen h-screen  bg-cover bg-center relative  overflow-hidden">
-      {/* Background image */}
+    <div className="w-screen h-screen bg-cover bg-center relative overflow-hidden">
       <div id="hey">
         <div id="layer-up"></div>
       </div>
@@ -206,40 +186,43 @@ function MainGame() {
           </div>
         </div>
       </div>
-      <canvas
-        ref={canvasRef}
-        className="absolute top-0 left-0  w-full h-full"
-      ></canvas>
+
+      <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
 
       <div className="absolute top-4 left-6 text-white font-semibold text-xl">
-        Score: <span className="text-lime-400">{score}</span>
+        Score: 
+        <span className="text-lime-400">{score}</span>
       </div>
       <div className="absolute top-4 right-6 text-white font-semibold text-xl">
-        Level: <span className="text-yellow-300">{level}</span>
+        Level: 
+        <span className="text-yellow-300">{level}</span>
       </div>
 
       <MobileKeyboard onKeyPress={handleKey} />
 
-      {gameOver && (
-        <GameOverScreen
-          score={score}
-          level={level}
-          onRestart={() => {
-            setScore(0);
-            setLevel(0);
-            setActive([]);
-            setParticles([]);
-            activeRef.current = [];
-            speedRef.current = 0.5;
-            lastSpawn.current = 0;
-            lastSpeedIncrease.current = 0;
-            setGameOver(false);
-          }}
-        />
-      )}
+      <AnimatePresence>
+        {gameOver && (
+          <GameOverScreen
+            score={score}
+            level={level}
+            onRestart={() => {
+              setScore(0);
+              setLevel(1);
+              setActive([]);
+              setParticles([]);
+              activeRef.current = [];
+              speedRef.current = 0.5;
+              lastSpawn.current = 0;
+              lastSpeedIncrease.current = 0;
+              setGameOver(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
-      <audio ref={shootRef} src="shoot.wav"></audio>
-      <audio ref={explosionRef} src="explode.wav"></audio>
+      {/* Make sure shoot.wav and explode.wav exist in your public folder */}
+      {/* <audio ref={shootRef} src="/shoot.wav" preload="auto" /> */}
+      {/* <audio ref={explosionRef} src="/explode.wav" preload="auto" /> */}
     </div>
   );
 }
