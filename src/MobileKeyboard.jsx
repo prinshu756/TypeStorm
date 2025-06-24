@@ -24,7 +24,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
   if (!isTouchDevice) return null;
 
   return (
-    <div className="absolute bottom-0  w-full flex flex-col items-center">
+    <div className="absolute mb-14 bottom-3 w-full flex flex-col items-center">
       {/* Toggle Button */}
       <button
         className="mb-2 bg-blue-600 text-white px-4 py-1 rounded-md text-sm font-medium shadow hover:bg-blue-700 transition"
@@ -37,7 +37,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
       <AnimatePresence>
         {visible && (
           <motion.div
-            className="w-full flex flex-col items-center mb-10 gap-1 px-2 pb-3"
+            className="w-full flex flex-col items-center mb-3 gap-1 px-2 pb-3"
             initial={{ opacity: 0, y: 100 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 100 }}
