@@ -121,7 +121,7 @@ function MainGame() {
     }
 
     // Update base speed when level changes
-    const newSpeed = 0.3 + newLevel * 0.05;
+    const newSpeed = 0.3 + newLevel * 0.1;
     speedRef.current = newSpeed;
   }, [score]);
 
