@@ -20,7 +20,7 @@ function MainGame() {
   const [gameOver, setGameOver] = useState(false);
   const [level, setLevel] = useState(1);
 
-  const speedRef = useRef(0.5);
+  const speedRef = useRef(0.25); // Slower base speed
   const lastSpawn = useRef(0);
   const lastSpeedIncrease = useRef(0);
   const gameLoopRef = useRef(null);
@@ -38,7 +38,7 @@ function MainGame() {
       typed: "",
       x,
       y: -40,
-      speed: speedRef.current,
+      speed: speedRef.current + level * 0.05, // Less increase with level
     };
 
     setActive((prev) => {
@@ -89,29 +89,27 @@ function MainGame() {
     const target = document.querySelector(`.key-btn[data-key='${ch}']`);
     if (target) target.style.background = "#0f0";
 
-    let [first, ...rest] = activeRef.current;
-    let updatedFirst = { ...first };
+    const updatedWords = activeRef.current.map((word) => {
+      if (word.text.startsWith(word.typed + ch)) {
+        const newTyped = word.typed + ch;
+        shootRef.current?.play();
 
-    if (first.text.startsWith(first.typed + ch)) {
-      updatedFirst.typed += ch;
-      shootRef.current?.play();
+        if (newTyped === word.text) {
+          explosionRef.current?.play();
+          explodeWord(word);
+          setScore((prev) => prev + word.text.length * 10);
+          return null; // remove the word
+        }
 
-      if (updatedFirst.typed === updatedFirst.text) {
-        explosionRef.current?.play();
-        explodeWord(updatedFirst);
-        setScore((prev) => prev + updatedFirst.text.length * 10);
-        activeRef.current = rest;
-        setActive(rest);
-        return;
+        return { ...word, typed: newTyped };
+      } else if (word.typed.length > 0) {
+        return { ...word, typed: "" }; // reset if wrong char typed
       }
+      return word;
+    }).filter(Boolean);
 
-      activeRef.current = [updatedFirst, ...rest];
-      setActive([updatedFirst, ...rest]);
-    } else {
-      updatedFirst.typed = "";
-      activeRef.current = [updatedFirst, ...rest];
-      setActive([updatedFirst, ...rest]);
-    }
+    activeRef.current = updatedWords;
+    setActive(updatedWords);
   };
 
   useEffect(() => {
@@ -135,10 +133,10 @@ function MainGame() {
         lastSpawn.current = timestamp;
       }
 
-      if (timestamp - lastSpeedIncrease.current > 20000) {
-        speedRef.current += 0.15 * level;
-        lastSpeedIncrease.current = timestamp;
+      if (timestamp - lastSpeedIncrease.current > 10000) { // Level up every 10s
         setLevel((prev) => prev + 1);
+        speedRef.current += 0.02; // Slower speed increase
+        lastSpeedIncrease.current = timestamp;
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -147,11 +145,11 @@ function MainGame() {
 
       const updated = activeRef.current.map((w) => ({ ...w, y: w.y + w.speed }));
 
-      updated.forEach((w, i) => {
+      updated.forEach((w) => {
         ctx.font = "28px 'Press Start 2P', monospace";
         const { typed, text, x, y } = w;
         const rest = text.substring(typed.length);
-        ctx.fillStyle = i === 0 ? "#0ff" : "#aaa";
+        ctx.fillStyle = "#0ff";
         ctx.fillText(typed, x, y);
         ctx.fillStyle = "#fff";
         ctx.fillText(rest, x + ctx.measureText(typed).width, y);
@@ -159,7 +157,7 @@ function MainGame() {
 
       if (updated.some((w) => w.y > canvas.height - 10)) {
         if (!gameOver) setGameOver(true);
-        return  ;
+        return;
       }
 
       activeRef.current = updated;
@@ -190,12 +188,10 @@ function MainGame() {
       <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
 
       <div className="absolute top-4 left-6 text-white font-semibold text-xl">
-        Score: 
-        <span className="text-lime-400">{score}</span>
+        Score: <span className="text-lime-400">{score}</span>
       </div>
       <div className="absolute top-4 right-6 text-white font-semibold text-xl">
-        Level: 
-        <span className="text-yellow-300">{level}</span>
+        Level: <span className="text-yellow-300">{level}</span>
       </div>
 
       <MobileKeyboard onKeyPress={handleKey} />
@@ -211,7 +207,7 @@ function MainGame() {
               setActive([]);
               setParticles([]);
               activeRef.current = [];
-              speedRef.current = 0.5;
+              speedRef.current = 0.25;
               lastSpawn.current = 0;
               lastSpeedIncrease.current = 0;
               setGameOver(false);
@@ -220,7 +216,6 @@ function MainGame() {
         )}
       </AnimatePresence>
 
-      {/* Make sure shoot.wav and explode.wav exist in your public folder */}
       {/* <audio ref={shootRef} src="/shoot.wav" preload="auto" /> */}
       {/* <audio ref={explosionRef} src="/explode.wav" preload="auto" /> */}
     </div>
