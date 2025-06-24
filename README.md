@@ -30,17 +30,10 @@ TypeStorm is a browser-based game where you must type the exact words provided b
 
 🛠️ Tech Stack
 
-- **React.js**
-- **Framer Motion** (for animations)
-- **Tailwind CSS** (for styling)
-- **Custom Virtual Keyboard**
-- **Local state management (no external state libraries)**
+- React.js
+- Framer Motion (for animations)
+- Tailwind CSS (for styling)
+- Custom Virtual Keyboard
 
 🚀 Getting Started
 
-Clone the repository and run it locally:
-
-git clone https://github.com/your-username/typestorm.git
-cd typestorm
-npm install
-npm start
