@@ -20,7 +20,6 @@ const MobileKeyboard = ({ onKeyPress }) => {
     return () => touchQuery.removeEventListener("change", checkDevice);
   }, []);
 
-  // Handle input from native keyboard
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
@@ -32,6 +31,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
     };
 
     const handleBlur = () => {
+      // Prevent auto-refocus when user switches intentionally
       if (!showVirtualKeyboard) {
         setTimeout(() => input.focus(), 100);
       }
@@ -42,6 +42,8 @@ const MobileKeyboard = ({ onKeyPress }) => {
 
     if (!showVirtualKeyboard) {
       input.focus();
+    } else {
+      input.blur();
     }
 
     return () => {
@@ -54,12 +56,13 @@ const MobileKeyboard = ({ onKeyPress }) => {
 
   return (
     <div className="fixed bottom-0 w-full z-50 flex flex-col items-center px-4 pb-2">
-      {/* Hidden but active input (native keyboard) */}
+      {/* Hidden but functional input */}
       <input
         ref={inputRef}
         type="text"
         inputMode="text"
-        className="fixed opacity-0 w-px h-px -bottom-24 left-0"
+        className="fixed opacity-0 w-px h-px pointer-events-none"
+        style={{ bottom: "-100vh", left: 0, position: "fixed" }}
         autoComplete="off"
         autoCorrect="off"
         spellCheck="false"
@@ -69,18 +72,24 @@ const MobileKeyboard = ({ onKeyPress }) => {
       <button
         onClick={() => {
           setShowVirtualKeyboard((prev) => !prev);
-          if (showVirtualKeyboard) {
-            inputRef.current.focus(); // Switch to native
-          } else {
-            inputRef.current.blur(); // Switch back to virtual
-          }
+
+          // Handle input focus/blur correctly on toggle
+          setTimeout(() => {
+            if (inputRef.current) {
+              if (!showVirtualKeyboard) {
+                inputRef.current.blur(); // Hides native keyboard
+              } else {
+                inputRef.current.focus(); // Shows native keyboard
+              }
+            }
+          }, 50); // Let DOM update first
         }}
         className="mb-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:bg-blue-700 transition w-full max-w-md"
       >
         {showVirtualKeyboard ? "Use Device Keyboard" : "Show Virtual Keyboard"}
       </button>
 
-      {/* Virtual Keyboard (shown by default) */}
+      {/* Virtual Keyboard */}
       <AnimatePresence>
         {showVirtualKeyboard && (
           <motion.div
