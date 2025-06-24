@@ -20,7 +20,7 @@ function MainGame() {
   const [particles, setParticles] = useState([]);
   const [gameOver, setGameOver] = useState(false);
 
-  const speedRef = useRef(0.27);
+  const speedRef = useRef(0.3);
   const lastSpawn = useRef(0);
   const gameLoopRef = useRef(null);
 
@@ -37,7 +37,7 @@ function MainGame() {
       typed: "",
       x,
       y: -40,
-      speed: speedRef.current + level * 0.05,
+      speed: speedRef.current + level * 0.1,
     };
 
     setActive((prev) => {
