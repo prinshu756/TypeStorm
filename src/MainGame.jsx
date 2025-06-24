@@ -16,13 +16,12 @@ function MainGame() {
 
   const [active, setActive] = useState([]);
   const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
   const [particles, setParticles] = useState([]);
   const [gameOver, setGameOver] = useState(false);
-  const [level, setLevel] = useState(1);
 
-  const speedRef = useRef(0.25); // Slower base speed
+  const speedRef = useRef(0.27);
   const lastSpawn = useRef(0);
-  const lastSpeedIncrease = useRef(0);
   const gameLoopRef = useRef(null);
 
   const spawnWord = () => {
@@ -38,7 +37,7 @@ function MainGame() {
       typed: "",
       x,
       y: -40,
-      speed: speedRef.current + level * 0.05, // Less increase with level
+      speed: speedRef.current + level * 0.05,
     };
 
     setActive((prev) => {
@@ -89,28 +88,38 @@ function MainGame() {
     const target = document.querySelector(`.key-btn[data-key='${ch}']`);
     if (target) target.style.background = "#0f0";
 
-    const updatedWords = activeRef.current.map((word) => {
+    let updatedWords = [...activeRef.current];
+    const targetIndex = updatedWords.findIndex((w) => w.typed.length > 0 || w.text.startsWith(ch));
+
+    if (targetIndex !== -1) {
+      const word = updatedWords[targetIndex];
       if (word.text.startsWith(word.typed + ch)) {
-        const newTyped = word.typed + ch;
+        word.typed += ch;
         shootRef.current?.play();
 
-        if (newTyped === word.text) {
+        if (word.typed === word.text) {
           explosionRef.current?.play();
           explodeWord(word);
-          setScore((prev) => prev + word.text.length * 10);
-          return null; // remove the word
+          const gained = word.text.length * 10;
+          setScore((prevScore) => prevScore + gained);
+          updatedWords.splice(targetIndex, 1);
         }
-
-        return { ...word, typed: newTyped };
-      } else if (word.typed.length > 0) {
-        return { ...word, typed: "" }; // reset if wrong char typed
+      } else {
+        word.typed = ""; // wrong key resets
       }
-      return word;
-    }).filter(Boolean);
+    }
 
     activeRef.current = updatedWords;
     setActive(updatedWords);
   };
+
+  // Recalculate level based on score
+  useEffect(() => {
+    const newLevel = Math.floor(score / 500) + 1;
+    if (newLevel !== level) {
+      setLevel(newLevel);
+    }
+  }, [score]);
 
   useEffect(() => {
     const isTouch = window.matchMedia("(pointer: coarse)").matches;
@@ -131,12 +140,6 @@ function MainGame() {
       if (lastSpawn.current === 0 || timestamp - lastSpawn.current > 2500) {
         spawnWord();
         lastSpawn.current = timestamp;
-      }
-
-      if (timestamp - lastSpeedIncrease.current > 10000) { // Level up every 10s
-        setLevel((prev) => prev + 1);
-        speedRef.current += 0.02; // Slower speed increase
-        lastSpeedIncrease.current = timestamp;
       }
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -172,14 +175,12 @@ function MainGame() {
 
   return (
     <div className="w-screen h-screen bg-cover bg-center relative overflow-hidden">
-      <div id="hey">
-        <div id="layer-up"></div>
-      </div>
+      <div id="hey"><div id="layer-up" /></div>
       <div id="layer-0">
         <div id="layer-1">
           <div id="layer-2">
             <div id="lines">
-              <div id="layer-corner"></div>
+              <div id="layer-corner" />
             </div>
           </div>
         </div>
@@ -209,7 +210,6 @@ function MainGame() {
               activeRef.current = [];
               speedRef.current = 0.25;
               lastSpawn.current = 0;
-              lastSpeedIncrease.current = 0;
               setGameOver(false);
             }}
           />
