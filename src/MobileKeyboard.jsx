@@ -12,6 +12,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [showVirtualKeyboard, setShowVirtualKeyboard] = useState(true);
 
+  // Detect touch devices
   useEffect(() => {
     const touchQuery = window.matchMedia("(pointer: coarse)");
     const checkDevice = () => setIsTouchDevice(touchQuery.matches);
@@ -20,6 +21,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
     return () => touchQuery.removeEventListener("change", checkDevice);
   }, []);
 
+  // Native input handling
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
@@ -31,7 +33,6 @@ const MobileKeyboard = ({ onKeyPress }) => {
     };
 
     const handleBlur = () => {
-      // Prevent auto-refocus when user switches intentionally
       if (!showVirtualKeyboard) {
         setTimeout(() => input.focus(), 100);
       }
@@ -40,6 +41,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
     input.addEventListener("input", handleInput);
     input.addEventListener("blur", handleBlur);
 
+    // Manage focus based on keyboard mode
     if (!showVirtualKeyboard) {
       input.focus();
     } else {
@@ -55,34 +57,35 @@ const MobileKeyboard = ({ onKeyPress }) => {
   if (!isTouchDevice) return null;
 
   return (
-    <div className="fixed bottom-0 w-full z-50 flex flex-col items-center px-4 pb-2">
-      {/* Hidden but functional input */}
+    <div
+      className="fixed bottom-0 w-full z-50 flex flex-col items-center px-4 pb-3 bg-transparent"
+      style={{ touchAction: "manipulation" }} // smoother taps
+    >
+      {/* Hidden input positioned FAR outside the screen to prevent layout shift */}
       <input
         ref={inputRef}
         type="text"
         inputMode="text"
-        className="fixed opacity-0 w-px h-px pointer-events-none"
-        style={{ bottom: "-100vh", left: 0, position: "fixed" }}
         autoComplete="off"
         autoCorrect="off"
         spellCheck="false"
+        className="absolute opacity-0 w-0 h-0 pointer-events-none"
+        style={{ position: "absolute", top: "-9999px" }}
       />
 
-      {/* Toggle Button */}
+      {/* Toggle Keyboard Mode Button */}
       <button
         onClick={() => {
           setShowVirtualKeyboard((prev) => !prev);
-
-          // Handle input focus/blur correctly on toggle
           setTimeout(() => {
             if (inputRef.current) {
               if (!showVirtualKeyboard) {
-                inputRef.current.blur(); // Hides native keyboard
+                inputRef.current.focus(); // Switch to native
               } else {
-                inputRef.current.focus(); // Shows native keyboard
+                inputRef.current.blur(); // Switch to virtual
               }
             }
-          }, 50); // Let DOM update first
+          }, 50);
         }}
         className="mb-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:bg-blue-700 transition w-full max-w-md"
       >
@@ -93,11 +96,11 @@ const MobileKeyboard = ({ onKeyPress }) => {
       <AnimatePresence>
         {showVirtualKeyboard && (
           <motion.div
-            className="w-full max-w-md flex flex-col items-center gap-1 bg-black/80 p-2 rounded-lg"
+            className="w-full max-w-md flex flex-col items-center gap-1 bg-black/90 p-3 rounded-lg"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
           >
             {QWERTY_KEYS.map((row, rowIndex) => (
               <div
@@ -109,7 +112,11 @@ const MobileKeyboard = ({ onKeyPress }) => {
                     key={key}
                     data-key={key}
                     onClick={() => onKeyPress(key)}
-                    className="key-btn flex-1 min-w-[10%] max-w-[12%] bg-zinc-800 text-lime-300 font-bold aspect-square text-center rounded transition-colors text-base"
+                    className="flex-1 min-w-[9%] max-w-[13%] text-center py-3 bg-zinc-800 text-lime-300 rounded-md font-semibold text-base active:scale-95 transition-transform"
+                    style={{
+                      touchAction: "manipulation",
+                      userSelect: "none",
+                    }}
                   >
                     {key.toUpperCase()}
                   </button>
