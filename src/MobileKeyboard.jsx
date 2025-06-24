@@ -10,7 +10,7 @@ const QWERTY_KEYS = [
 const MobileKeyboard = ({ onKeyPress }) => {
   const inputRef = useRef(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
-  const [showVirtualKeyboard, setShowVirtualKeyboard] = useState(false);
+  const [showVirtualKeyboard, setShowVirtualKeyboard] = useState(true);
 
   useEffect(() => {
     const touchQuery = window.matchMedia("(pointer: coarse)");
@@ -20,7 +20,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
     return () => touchQuery.removeEventListener("change", checkDevice);
   }, []);
 
-  // Focus and handle native input
+  // Handle input from native keyboard
   useEffect(() => {
     const input = inputRef.current;
     if (!input) return;
@@ -32,14 +32,17 @@ const MobileKeyboard = ({ onKeyPress }) => {
     };
 
     const handleBlur = () => {
-      setTimeout(() => {
-        if (!showVirtualKeyboard) input.focus(); // only refocus if not using virtual keyboard
-      }, 100);
+      if (!showVirtualKeyboard) {
+        setTimeout(() => input.focus(), 100);
+      }
     };
 
     input.addEventListener("input", handleInput);
     input.addEventListener("blur", handleBlur);
-    input.focus();
+
+    if (!showVirtualKeyboard) {
+      input.focus();
+    }
 
     return () => {
       input.removeEventListener("input", handleInput);
@@ -50,13 +53,13 @@ const MobileKeyboard = ({ onKeyPress }) => {
   if (!isTouchDevice) return null;
 
   return (
-    <div className="fixed bottom-3 mb-12 w-full z-50 bg-transparent flex flex-col items-center px-4 pb-2">
-      {/* Native Hidden Input Field */}
+    <div className="fixed bottom-0 w-full z-50 flex flex-col items-center px-4 pb-2">
+      {/* Hidden but active input (native keyboard) */}
       <input
         ref={inputRef}
         type="text"
         inputMode="text"
-        className="absolute top-0 left-0 opacity-0 w-0 h-0 pointer-events-none"
+        className="fixed opacity-0 w-px h-px -bottom-24 left-0"
         autoComplete="off"
         autoCorrect="off"
         spellCheck="false"
@@ -66,10 +69,10 @@ const MobileKeyboard = ({ onKeyPress }) => {
       <button
         onClick={() => {
           setShowVirtualKeyboard((prev) => !prev);
-          if (!showVirtualKeyboard) {
-            inputRef.current.blur(); // hide native keyboard
+          if (showVirtualKeyboard) {
+            inputRef.current.focus(); // Switch to native
           } else {
-            inputRef.current.focus(); // re-show native keyboard
+            inputRef.current.blur(); // Switch back to virtual
           }
         }}
         className="mb-2 bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium shadow hover:bg-blue-700 transition w-full max-w-md"
@@ -77,7 +80,7 @@ const MobileKeyboard = ({ onKeyPress }) => {
         {showVirtualKeyboard ? "Use Device Keyboard" : "Show Virtual Keyboard"}
       </button>
 
-      {/* Virtual Keyboard */}
+      {/* Virtual Keyboard (shown by default) */}
       <AnimatePresence>
         {showVirtualKeyboard && (
           <motion.div
