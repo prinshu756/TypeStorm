@@ -4,7 +4,6 @@ import MobileKeyboard from "./MobileKeyboard.jsx";
 import GameOverScreen from "./GameOver.jsx";
 import generateRandomWords from "./randomWords.js";
 import "./index.css";
-import "./app.css";
 import "./style.css";
 
 const wordsList = generateRandomWords(100)
