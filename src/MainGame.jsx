@@ -20,7 +20,7 @@ function MainGame() {
   const [gameOver, setGameOver] = useState(false);
   const [level, setLevel] = useState(1);
 
-  const speedRef = useRef(0.6);
+  const speedRef = useRef(0.5);
   const lastSpawn = useRef(0);
   const lastSpeedIncrease = useRef(0);
   const gameLoopRef = useRef(null);
@@ -136,7 +136,7 @@ function MainGame() {
       }
 
       if (timestamp - lastSpeedIncrease.current > 20000) {
-        speedRef.current += 0.25 * level;
+        speedRef.current += 0.15 * level;
         lastSpeedIncrease.current = timestamp;
         setLevel((prev) => prev + 1);
       }
