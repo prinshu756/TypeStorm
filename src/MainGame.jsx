@@ -20,7 +20,7 @@ function MainGame() {
   const [particles, setParticles] = useState([]);
   const [gameOver, setGameOver] = useState(false);
 
-  const speedRef = useRef(0.3);
+  const speedRef = useRef(0.3); // base speed
   const lastSpawn = useRef(0);
   const gameLoopRef = useRef(null);
 
@@ -37,7 +37,7 @@ function MainGame() {
       typed: "",
       x,
       y: -40,
-      speed: speedRef.current + level * 0.1,
+      speed: speedRef.current,
     };
 
     setActive((prev) => {
@@ -105,7 +105,7 @@ function MainGame() {
           updatedWords.splice(targetIndex, 1);
         }
       } else {
-        word.typed = ""; // wrong key resets
+        word.typed = "";
       }
     }
 
@@ -113,12 +113,16 @@ function MainGame() {
     setActive(updatedWords);
   };
 
-  // Recalculate level based on score
+  // Recalculate level and update speedRef
   useEffect(() => {
     const newLevel = Math.floor(score / 500) + 1;
     if (newLevel !== level) {
       setLevel(newLevel);
     }
+
+    // Update base speed when level changes
+    const newSpeed = 0.3 + newLevel * 0.05;
+    speedRef.current = newSpeed;
   }, [score]);
 
   useEffect(() => {
@@ -146,7 +150,10 @@ function MainGame() {
       updateParticles();
       drawParticles(ctx);
 
-      const updated = activeRef.current.map((w) => ({ ...w, y: w.y + w.speed }));
+      const updated = activeRef.current.map((w) => ({
+        ...w,
+        y: w.y + w.speed,
+      }));
 
       updated.forEach((w) => {
         ctx.font = "28px 'Press Start 2P', monospace";
@@ -179,9 +186,7 @@ function MainGame() {
       <div id="layer-0">
         <div id="layer-1">
           <div id="layer-2">
-            <div id="lines">
-              <div id="layer-corner" />
-            </div>
+            <div id="lines"><div id="layer-corner" /></div>
           </div>
         </div>
       </div>
@@ -208,7 +213,7 @@ function MainGame() {
               setActive([]);
               setParticles([]);
               activeRef.current = [];
-              speedRef.current = 0.25;
+              speedRef.current = 0.3;
               lastSpawn.current = 0;
               setGameOver(false);
             }}
