@@ -1,13 +1,46 @@
-# React + Vite
+🌩️ TypeStorm
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Welcome to TypeStorm – a fast-paced typing challenge where your speed, accuracy, and memory are put to the ultimate test!
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🎮 Game Description
 
-## Expanding the ESLint configuration
+TypeStorm is a browser-based game where you must type the exact words provided by the computer (that’s me 😄) to score points. But there’s a twist:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-"# TypeStorm" 
+- You must type each word with 100% accuracy.
+- Words appear in a sequence, and you must **remember the order** to target the correct word.
+- Type fast, stay focused, and dominate the storm!
+
+🕹️ How to Play
+
+1. Start the game – you'll see words falling from the top of the screen.
+2. Type the correct word exactly as shown.
+3. Only the word at the bottom is your active target — don’t get distracted by others!
+4. Score points by typing it correctly before it hits the bottom.
+5. Miss a word or make a mistake, and you lose your chance!
+
+✅ Features
+
+- ✅ Real-time falling word animation
+- ✅ Score tracking
+- ✅ Sequence memory challenge
+- ✅ QWERTY-style virtual keyboard (mobile friendly!)
+- ✅ Game Over screen with smooth transition
+
+🛠️ Tech Stack
+
+- **React.js**
+- **Framer Motion** (for animations)
+- **Tailwind CSS** (for styling)
+- **Custom Virtual Keyboard**
+- **Local state management (no external state libraries)**
+
+🚀 Getting Started
+
+Clone the repository and run it locally:
+
+git clone https://github.com/your-username/typestorm.git
+cd typestorm
+npm install
+npm start
