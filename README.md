@@ -36,4 +36,5 @@ TypeStorm is a browser-based game where you must type the exact words provided b
 - Custom Virtual Keyboard
 
 🚀 Getting Started
+https://prinshu756.github.io/TypeStorm/
 
